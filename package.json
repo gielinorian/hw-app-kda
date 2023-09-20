@@ -1,5 +1,5 @@
 {
-  "name": "hw-app-kda",
+  "name": "@gielinorian/hw-app-kda",
   "version": "0.1.0",
   "description": "Ledger Hardware Wallet Kadena Application API",
   "license": "Apache-2.0",
@@ -30,7 +30,7 @@
   "module": "lib-es/Kadena.js",
   "types": "lib/Kadena.d.ts",
   "dependencies": {
-    "@ledgerhq/hw-transport": "^6.3.0",
+    "@ledgerhq/hw-transport": "^6.28.8",
     "blake2b": "^2.1.4",
     "hw-app-alamgu": "git+https://github.com/alamgu/hw-app-alamgu#6822e963dd4a92d50929bd8a3b750c90973504b3"
   },
@@ -39,7 +39,7 @@
     "prepare": "tsc && tsc -m ES6 --outDir lib-es"
   },
   "devDependencies": {
-    "@types/node": "^16.10.3",
-    "typescript": "^4.4.3"
+    "@types/node": "^20.6.3",
+    "typescript": "^5.2.2"
   }
 }
