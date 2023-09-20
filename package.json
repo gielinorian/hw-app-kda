@@ -27,16 +27,17 @@
   "bin": {
     "kda-cli": "main.js"
   },
-  "module": "lib-es/Kadena.js",
+  "module": "lib/Kadena.js",
   "types": "lib/Kadena.d.ts",
   "dependencies": {
     "@ledgerhq/hw-transport": "^6.28.8",
+    "bip32-path": "^0.4.2",
     "blake2b": "^2.1.4",
     "hw-app-alamgu": "git+https://github.com/alamgu/hw-app-alamgu#6822e963dd4a92d50929bd8a3b750c90973504b3"
   },
   "scripts": {
-    "build": "tsc && tsc -m ES6 --outDir lib-es",
-    "prepare": "tsc && tsc -m ES6 --outDir lib-es"
+    "build": "tsc",
+    "prepare": "tsc"
   },
   "devDependencies": {
     "@types/node": "^20.6.3",
