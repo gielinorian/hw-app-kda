@@ -1,4 +1,11 @@
+# IDEA
+.idea
+.vscode
+
+# node
 node_modules
 lib
 lib-es
+
 package-lock.json
+yarn.lock
