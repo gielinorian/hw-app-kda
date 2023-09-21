@@ -80,8 +80,8 @@ export default class Kadena extends Common {
     const ins: number = 0x04;
     const p1: number = 0;
     const p2: number = 0;
-    const rawHash: Buffer = typeof hash == 'string' ? (hash.length == 64 ? Buffer.from(hash, 'hex') : Buffer.from(hash, 'base64')) : Buffer.from(hash);
-    if (rawHash.length != 32) {
+    const rawHash: Buffer = typeof hash === 'string' ? (hash.length === 64 ? Buffer.from(hash, 'hex') : Buffer.from(hash, 'base64')) : Buffer.from(hash);
+    if (rawHash.length !== 32) {
       throw new TypeError('Hash is not 32 bytes');
     } else {
       // Bip32key payload same as getPublicKey
@@ -126,7 +126,7 @@ export default class Kadena extends Common {
    * @returns the signed Pact Command and the public key of the signer.
    */
   async signTransferCrossChainTx(params: TransferCrossChainTxParams): Promise<BuildTransactionResult> {
-    if (params.chainId == params.recipient_chainId) throw new TypeError("Recipient chainId is same as sender's in a cross-chain transfer");
+    if (params.chainId === params.recipient_chainId) throw new TypeError("Recipient chainId is same as sender's in a cross-chain transfer");
     return await this.signTxInternal(params, 2);
   }
 
@@ -134,15 +134,15 @@ export default class Kadena extends Common {
     // Use defaults if value not specified
     const currentDate: Date = new Date();
 
-    const path: string = params.path === undefined ? "44'/626'/0'/0/0" : params.path;
+    const path: string = params?.path || "44'/626'/0'/0/0";
     if (!(path.startsWith("44'/626'/") || path.startsWith("m/44'/626'/"))) throw new TypeError("Path does not start with `44'/626'/` or `m/44'/626'/`");
 
     const recipient: string = params.recipient.startsWith('k:') ? params.recipient.substring(2) : params.recipient;
     if (!recipient.match(/[0-9A-Fa-f]{64}/g)) throw new TypeError("Recipient should be a hex encoded pubkey or 'k:' address");
 
-    const namespace_: string = params.namespace === undefined ? '' : params.namespace;
-    const module_: string = params.module === undefined ? '' : params.module;
-    if (namespace_ != '' && module_ == '') throw new TypeError("Along with 'namespace' 'module' need to be specified");
+    const namespace: string = params?.namespace || '';
+    const module: string = params?.module || '';
+    if (namespace !== '' && module === '') throw new TypeError("Along with 'namespace' 'module' need to be specified");
 
     if (verifyNaN(params.amount)) throw new TypeError('amount is non a number');
     if (verifyNaN(params.gasPrice)) throw new TypeError('gasPrice is non a number');
@@ -151,12 +151,12 @@ export default class Kadena extends Common {
     if (verifyNaN(params.ttl)) throw new TypeError('ttl is non a number');
 
     const amount: string = convertDecimal(params.amount);
-    const gasPrice: string = params.gasPrice === undefined ? '1.0e-6' : params.gasPrice;
-    const gasLimit: string = params.gasLimit === undefined ? '2300' : params.gasLimit;
-    const creationTime: number = params.creationTime === undefined ? Math.floor(currentDate.getTime() / 1000) : params.creationTime;
-    const ttl: string = params.ttl === undefined ? '600' : params.ttl;
+    const gasPrice: string = params?.gasPrice || '1.0e-6';
+    const gasLimit: string = params?.gasLimit || '2300';
+    const creationTime: number = params?.creationTime || Math.floor(currentDate.getTime() / 1000);
+    const ttl: string = params?.ttl || '600';
 
-    const nonce: string = params.nonce === undefined ? '' : params.nonce;
+    const nonce: string = params?.nonce || '';
     // Do APDU call
     const paths: number[] = splitPath(path);
     const cla: number = 0x00;
@@ -173,8 +173,8 @@ export default class Kadena extends Common {
       textPayload(params.recipient_chainId.toString()),
       textPayload(params.network),
       textPayload(amount),
-      textPayload(namespace_),
-      textPayload(module_),
+      textPayload(namespace),
+      textPayload(module),
       textPayload(gasPrice),
       textPayload(gasLimit),
       textPayload(creationTime.toString()),
@@ -188,31 +188,31 @@ export default class Kadena extends Common {
 
     // Build the JSON, exactly like the Ledger app
     let cmd: string = '{"networkId":"' + params.network + '"';
-    if (txType == 0) {
+    if (txType === 0) {
       cmd += ',"payload":{"exec":{"data":{},"code":"';
-      if (namespace_ == '') {
+      if (namespace === '') {
         cmd += '(coin.transfer';
       } else {
-        cmd += '(' + namespace_ + '.' + module_ + '.transfer';
+        cmd += '(' + namespace + '.' + module + '.transfer';
       }
       cmd += ' \\"k:' + pubkey + '\\"';
       cmd += ' \\"k:' + recipient + '\\"';
       cmd += ' ' + amount + ')"}}';
       cmd += ',"signers":[{"pubKey":"' + pubkey + '"';
       cmd += ',"clist":[{"args":["k:' + pubkey + '","k:' + recipient + '",' + amount + ']';
-      if (namespace_ == '') {
+      if (namespace === '') {
         cmd += ',"name":"coin.TRANSFER"},{"args":[],"name":"coin.GAS"}]}]';
       } else {
-        cmd += ',"name":"' + namespace_ + '.' + module_ + '.TRANSFER"},{"args":[],"name":"coin.GAS"}]}]';
+        cmd += ',"name":"' + namespace + '.' + module + '.TRANSFER"},{"args":[],"name":"coin.GAS"}]}]';
       }
-    } else if (txType == 1) {
+    } else if (txType === 1) {
       cmd += ',"payload":{"exec":{"data":{';
       cmd += '"ks":{"pred":"keys-all","keys":["' + recipient + '"]}';
       cmd += '},"code":"';
-      if (namespace_ == '') {
+      if (namespace === '') {
         cmd += '(coin.transfer-create';
       } else {
-        cmd += '(' + namespace_ + '.' + module_ + '.transfer-create';
+        cmd += '(' + namespace + '.' + module + '.transfer-create';
       }
       cmd += ' \\"k:' + pubkey + '\\"';
       cmd += ' \\"k:' + recipient + '\\"';
@@ -220,19 +220,19 @@ export default class Kadena extends Common {
       cmd += ' ' + amount + ')"}}';
       cmd += ',"signers":[{"pubKey":"' + pubkey + '"';
       cmd += ',"clist":[{"args":["k:' + pubkey + '","k:' + recipient + '",' + amount + ']';
-      if (namespace_ == '') {
+      if (namespace === '') {
         cmd += ',"name":"coin.TRANSFER"},{"args":[],"name":"coin.GAS"}]}]';
       } else {
-        cmd += ',"name":"' + namespace_ + '.' + module_ + '.TRANSFER"},{"args":[],"name":"coin.GAS"}]}]';
+        cmd += ',"name":"' + namespace + '.' + module + '.TRANSFER"},{"args":[],"name":"coin.GAS"}]}]';
       }
     } else {
       cmd += ',"payload":{"exec":{"data":{';
       cmd += '"ks":{"pred":"keys-all","keys":["' + recipient + '"]}';
       cmd += '},"code":"';
-      if (namespace_ == '') {
+      if (namespace === '') {
         cmd += '(coin.transfer-crosschain';
       } else {
-        cmd += '(' + namespace_ + '.' + module_ + '.transfer-crosschain';
+        cmd += '(' + namespace + '.' + module + '.transfer-crosschain';
       }
       cmd += ' \\"k:' + pubkey + '\\"';
       cmd += ' \\"k:' + recipient + '\\"';
@@ -241,10 +241,10 @@ export default class Kadena extends Common {
       cmd += ' ' + amount + ')"}}';
       cmd += ',"signers":[{"pubKey":"' + pubkey + '"';
       cmd += ',"clist":[{"args":["k:' + pubkey + '","k:' + recipient + '",' + amount + ',"' + params.recipient_chainId.toString() + '"]';
-      if (namespace_ == '') {
+      if (namespace === '') {
         cmd += ',"name":"coin.TRANSFER_XCHAIN"},{"args":[],"name":"coin.GAS"}]}]';
       } else {
-        cmd += ',"name":"' + namespace_ + '.' + module_ + '.TRANSFER_XCHAIN"},{"args":[],"name":"coin.GAS"}]}]';
+        cmd += ',"name":"' + namespace + '.' + module + '.TRANSFER_XCHAIN"},{"args":[],"name":"coin.GAS"}]}]';
       }
     }
     cmd += ',"meta":{"creationTime":' + creationTime.toString();
@@ -253,7 +253,7 @@ export default class Kadena extends Common {
 
     const hash_bytes = blake2b(32).update(Buffer.from(cmd, 'utf-8')).digest();
     // base64url encode, remove padding
-    const hash = Buffer.from(hash_bytes).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    const hash: string = Buffer.from(hash_bytes).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
     return {
       pubkey,
       pact_command: {
