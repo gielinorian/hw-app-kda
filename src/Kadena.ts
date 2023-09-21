@@ -55,6 +55,12 @@ export interface PactCommandSig {
   sig: string;
 }
 
+export enum TransactionType {
+  TRANSFER = 0,
+  TRANSFER_CREATE = 1,
+  TRANSFER_CROSS_CHAIN = 2,
+}
+
 /**
  * Kadena API
  *
@@ -104,7 +110,7 @@ export default class Kadena extends Common {
   async signTransferTx(params: TransferTxParams): Promise<BuildTransactionResult> {
     const p1: TransferCrossChainTxParams = params as TransferCrossChainTxParams;
     p1.recipient_chainId = 0; // Ignored by Ledger App
-    return await this.signTxInternal(p1, 0);
+    return await this.signTxInternal(p1, TransactionType.TRANSFER);
   }
 
   /**
@@ -116,7 +122,7 @@ export default class Kadena extends Common {
   async signTransferCreateTx(params: TransferTxParams): Promise<BuildTransactionResult> {
     const p1: TransferCrossChainTxParams = params as TransferCrossChainTxParams;
     p1.recipient_chainId = 0; // Ignored by Ledger App
-    return await this.signTxInternal(p1, 1);
+    return await this.signTxInternal(p1, TransactionType.TRANSFER_CREATE);
   }
 
   /**
@@ -127,10 +133,10 @@ export default class Kadena extends Common {
    */
   async signTransferCrossChainTx(params: TransferCrossChainTxParams): Promise<BuildTransactionResult> {
     if (params.chainId === params.recipient_chainId) throw new TypeError("Recipient chainId is same as sender's in a cross-chain transfer");
-    return await this.signTxInternal(params, 2);
+    return await this.signTxInternal(params, TransactionType.TRANSFER_CROSS_CHAIN);
   }
 
-  private async signTxInternal(params: TransferCrossChainTxParams, txType): Promise<BuildTransactionResult> {
+  private async signTxInternal(params: TransferCrossChainTxParams, txType: TransactionType): Promise<BuildTransactionResult> {
     // Use defaults if value not specified
     const currentDate: Date = new Date();
 
